@@ -1,0 +1,13 @@
+# Arquivos ignorados por padrão
+/shelf/
+/workspace.xml
+# Arquivos ignorados do Rider
+/contentModel.xml
+/modules.xml
+/projectSettingsUpdater.xml
+/.idea.BackCriptoDisk2.iml
+# Solicitações do HTTP Client com base no editor
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
