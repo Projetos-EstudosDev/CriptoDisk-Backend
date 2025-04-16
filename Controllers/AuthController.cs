@@ -1,7 +1,8 @@
-using BackCriptoDisk2.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using BackCriptoDisk2.Models;
+using BackCriptoDisk2.Data;
+
 
 namespace BackCriptoDisk2.Controllers
 {
@@ -15,7 +16,7 @@ namespace BackCriptoDisk2.Controllers
         {
             _context = context;
         }
-        
+
         // GET: api/<AuthController>
         [HttpGet]
         public ActionResult<List<Cadastro>> PegarCadastros()
@@ -23,7 +24,7 @@ namespace BackCriptoDisk2.Controllers
             var cadas = _context.usuarios.ToList();
             return Ok(cadas);
         }
-        
+
         // GET api/<AuthController>/5
         [HttpGet("{id}")]
         public ActionResult<Cadastro> PegarCadastroID(int id)
@@ -33,20 +34,22 @@ namespace BackCriptoDisk2.Controllers
             {
                 return NotFound();
             }
+
             return Ok(buscar);
         }
 
         // POST api/<AuthController>
-        [HttpPost]
-        public  ActionResult<Cadastro> CriarConta([FromBody] Cadastro cadastro)
+        [HttpPost("Cadastro")]
+        public async Task<ActionResult<Cadastro>> CriarConta(Cadastro cadastro)
         {
             if (cadastro == null)
             {
                 return BadRequest("Dados invalidos");
             }
+
             _context.usuarios.Add(cadastro);
-            _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(PegarCadastroID), new {id = cadastro.id}, cadastro);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(PegarCadastroID), new { id = cadastro.id }, cadastro);
         }
 
         // PUT api/<AuthController>/5
