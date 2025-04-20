@@ -24,18 +24,17 @@ namespace BackCriptoDisk2.Controllers
             var cadas = _context.usuarios.ToList();
             return Ok(cadas);
         }
-
-        // GET api/<AuthController>/5
-        [HttpGet("{id}")]
-        public ActionResult<Cadastro> PegarCadastroID(int id)
+        
+        [HttpGet("{username}")]
+        public async Task<ActionResult<List<Username>>>  BuscarUsername(string username)
         {
-            var buscar = _context.usuarios.Find(id);
-            if (buscar == null)
+    
+            var result  =  _context.usuarios.Where(u=>u.username == username);
+            if (result == null)
             {
-                return NotFound();
+                return NotFound("Usuario nao encontrado");
             }
-
-            return Ok(buscar);
+            return Ok(result);
         }
 
         // POST api/<AuthController>
@@ -49,8 +48,10 @@ namespace BackCriptoDisk2.Controllers
 
             _context.usuarios.Add(cadastro);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(PegarCadastroID), new { id = cadastro.id }, cadastro);
+            return CreatedAtAction(nameof(BuscarUsername), new { username = cadastro.username }, cadastro);
         }
+
+     
 
         // PUT api/<AuthController>/5
         [HttpPut("{id}")]

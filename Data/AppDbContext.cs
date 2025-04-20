@@ -10,5 +10,14 @@ public class AppDbContext : DbContext
     {
     }
     public DbSet<Cadastro> usuarios { get; set; }
-  
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Cadastro>().ToTable("usuarios");
+        modelBuilder.Entity<Cadastro>()
+            .HasKey(c => c.username)
+            .HasName("username");
+
+
+    }
 }
