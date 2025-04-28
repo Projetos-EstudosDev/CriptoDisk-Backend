@@ -17,7 +17,6 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Cadastro>()
             .HasKey(c => c.username)
             .HasName("username");
-
-
+        
     }
 }

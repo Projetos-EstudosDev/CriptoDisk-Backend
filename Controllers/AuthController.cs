@@ -18,18 +18,18 @@ namespace BackCriptoDisk2.Controllers
         }
 
         // GET: api/<AuthController>
-        [HttpGet]
-        public ActionResult<List<Cadastro>> PegarCadastros()
+        [HttpGet("Usuarios")]
+        public ActionResult<List<Username>> PegarUsuarios()
         {
-            var cadas = _context.usuarios.ToList();
-            return Ok(cadas);
+            List<Username> usernames = _context.usuarios.Select(u => new Username { username = u.username }).ToList();
+            return Ok(usernames);
         }
         
-        [HttpGet("{username}")]
-        public async Task<ActionResult<List<Username>>>  BuscarUsername(string username)
+        [HttpGet("username")]
+        public ActionResult<List<Username>> BuscarUsername(string username)
         {
     
-            var result  =  _context.usuarios.Where(u=>u.username == username);
+            var result  =  _context.usuarios.Select(u => new Username { username = u.username }).FirstOrDefault(u => u.username == username);
             if (result == null)
             {
                 return NotFound("Usuario nao encontrado");
@@ -41,28 +41,28 @@ namespace BackCriptoDisk2.Controllers
         [HttpPost("Cadastro")]
         public async Task<ActionResult<Cadastro>> CriarConta(Cadastro cadastro)
         {
-            if (cadastro == null)
+            if (string.IsNullOrWhiteSpace(cadastro.nome) || string.IsNullOrWhiteSpace(cadastro.username) || string.IsNullOrWhiteSpace(cadastro.senha) || string.IsNullOrWhiteSpace(cadastro.email))
             {
                 return BadRequest("Dados invalidos");
+            } 
+            else if (_context.usuarios.Any(u => u.username == cadastro.username))
+            {
+                return BadRequest("Usuario ja existe");
             }
-
             _context.usuarios.Add(cadastro);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(BuscarUsername), new { username = cadastro.username }, cadastro);
         }
 
-     
-
-        // PUT api/<AuthController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPost("Login")]
+        public ActionResult<Cadastro>  logar(Login login)
         {
-        }
-
-        // DELETE api/<AuthController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            var result = _context.usuarios.FirstOrDefault(l => l.username == login.username && l.senha == login.senha);
+            if (result == null)
+            {
+                return BadRequest("Dados invalidos, Usuario ou senha incorretos");
+            } 
+            return Ok("Seja bem vindo " + result.username);
         }
     }
 }

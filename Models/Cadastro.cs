@@ -12,3 +12,14 @@ public class Cadastro
     public string? email { get; set; }
     public string? senha { get; set; }
 }
+
+public class Username
+{
+    public string? username { get; set; }
+}
+
+public class Login
+{
+    public string? username { get; set; }
+    public string? senha { get; set; }
+}
