@@ -18,18 +18,18 @@ namespace BackCriptoDisk2.Controllers
         }
 
         // GET: api/<AuthController>
-        [HttpGet("Usuarios")]
-        public ActionResult<List<Username>> PegarUsuarios()
+        [HttpGet("GetUsuarios")]
+        public ActionResult<List<Usuarios>> GetUsuarios()
         {
-            List<Username> usernames = _context.usuarios.Select(u => new Username { username = u.username }).ToList();
+            List<Usuarios> usernames = _context.usuarios.Select(g => new Usuarios { Username = g.Username }).ToList();
             return Ok(usernames);
         }
         
-        [HttpGet("username")]
-        public ActionResult<List<Username>> BuscarUsername(string username)
+        [HttpGet("FindUsername")]
+        public ActionResult<List<Usuarios>> FindUsername(string username)
         {
     
-            var result  =  _context.usuarios.Select(u => new Username { username = u.username }).FirstOrDefault(u => u.username == username);
+            var result  =  _context.usuarios.Select(f => new Usuarios {Username = f.Username}).FirstOrDefault(f => f.Username == username);
             if (result == null)
             {
                 return NotFound("Usuario nao encontrado");
@@ -38,31 +38,58 @@ namespace BackCriptoDisk2.Controllers
         }
 
         // POST api/<AuthController>
-        [HttpPost("Cadastro")]
-        public async Task<ActionResult<Cadastro>> CriarConta(Cadastro cadastro)
+        [HttpPost("CreateAccount")]
+        public async Task<ActionResult<Usuarios>> CreateAccount([FromBody] Usuarios usuarios)
         {
-            if (string.IsNullOrWhiteSpace(cadastro.nome) || string.IsNullOrWhiteSpace(cadastro.username) || string.IsNullOrWhiteSpace(cadastro.senha) || string.IsNullOrWhiteSpace(cadastro.email))
+            if (string.IsNullOrWhiteSpace(usuarios.Nome) || string.IsNullOrWhiteSpace(usuarios.Username) || string.IsNullOrWhiteSpace(usuarios.Senha) || string.IsNullOrWhiteSpace(usuarios.Email))
             {
                 return BadRequest("Dados invalidos");
             } 
-            else if (_context.usuarios.Any(u => u.username == cadastro.username))
+            else if (_context.usuarios.Any(u => u.Username == usuarios.Username))
             {
                 return BadRequest("Usuario ja existe");
             }
-            _context.usuarios.Add(cadastro);
+            _context.usuarios.Add(usuarios);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(BuscarUsername), new { username = cadastro.username }, cadastro);
+            return CreatedAtAction(nameof(FindUsername), new { username = usuarios.Id }, usuarios);
         }
 
         [HttpPost("Login")]
-        public ActionResult<Cadastro>  logar(Login login)
+        public ActionResult<Usuarios> Login([FromBody] Usuarios usuarios)
         {
-            var result = _context.usuarios.FirstOrDefault(l => l.username == login.username && l.senha == login.senha);
+            var result = _context.usuarios.FirstOrDefault(l => l.Username == usuarios.Username && l.Senha == usuarios.Senha);
             if (result == null)
             {
-                return BadRequest("Dados invalidos, Usuario ou senha incorretos");
-            } 
-            return Ok("Seja bem vindo " + result.username);
+                return Unauthorized("Usuario nao encontrado");
+            }
+            return Ok("Seja bem vindo(a) " + result.Nome);
+        }
+        
+        [HttpPut("ChangePassword")]
+        public ActionResult<Usuarios> ChangePassword(Usuarios usuarios)
+        {
+            var result = _context.usuarios.FirstOrDefault(l => l.Username == usuarios.Username && l.Email == usuarios.Email);
+            if (result == null)
+            {
+                return Unauthorized("Usuario nao encontrado");
+            }
+            result.Senha = usuarios.Senha;
+            _context.usuarios.Update(result);
+            _context.SaveChanges();
+            return Ok("Senha alterada com sucesso");
+        }
+        
+        [HttpDelete]
+        public ActionResult<Usuarios> Delete(Usuarios usuarios)
+        {
+            var result = _context.usuarios.FirstOrDefault(l => l.Username == usuarios.Username);
+            if (result == null)
+            {
+                return Unauthorized("Usuario nao encontrado");
+            }
+            _context.usuarios.Remove(result);
+            _context.SaveChanges();
+            return Ok("Usuario removido com sucesso");
         }
     }
 }

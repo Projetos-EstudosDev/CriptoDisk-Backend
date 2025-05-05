@@ -9,14 +9,19 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
-    public DbSet<Cadastro> usuarios { get; set; }
-
+    public DbSet<Usuarios> usuarios { get; set; }
+    public DbSet<Mensagem> mensagens { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Cadastro>().ToTable("usuarios");
-        modelBuilder.Entity<Cadastro>()
-            .HasKey(c => c.username)
-            .HasName("username");
+        modelBuilder.Entity<Usuarios>().ToTable("usuarios");
+        modelBuilder.Entity<Usuarios>()
+            .HasKey(c => c.Id)
+            .HasName("Id");
+        
+        modelBuilder.Entity<Mensagem>().ToTable("mensagens");
+        modelBuilder.Entity<Mensagem>()
+            .HasKey(c => c.Id)
+            .HasName("Id");
         
     }
 }
