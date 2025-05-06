@@ -5,6 +5,7 @@ using BackCriptoDisk2;
 using BackCriptoDisk2.Models;
 using BackCriptoDisk2.Data;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol.Plugins;
 
 var builder = WebApplication.CreateBuilder(args);
 var connections = new List<WebSocket>();
@@ -37,7 +38,6 @@ app.UseWebSockets();
 
 app.MapGet("/ws",async ( context) =>
 {
-    
     if (context.WebSockets.IsWebSocketRequest)
     {
         var clientName = context.Request.Query["username"];
@@ -47,20 +47,20 @@ app.MapGet("/ws",async ( context) =>
         await chat($"{clientName} Entrou na sala");
         
         await ReceberMensagem(websocket, async(result,buffer) =>
+        {
+            if (result.MessageType == WebSocketMessageType.Text)
+            { 
+                string message = Encoding.UTF8.GetString(buffer,0,result.Count);
+                await chat($"{clientName}: {message}",websocket);
+            }
+            else if(result.MessageType == WebSocketMessageType.Close || websocket.State == WebSocketState.Aborted)
             {
-                if (result.MessageType == WebSocketMessageType.Text)
-                { 
-                    string message = Encoding.UTF8.GetString(buffer,0,buffer.Length);
-                   await chat($"{clientName}: {message}");
-                }
-                else if(result.MessageType == WebSocketMessageType.Close || websocket.State == WebSocketState.Aborted)
-                {
-                    connections.Remove(websocket);
-                    await chat($"{clientName} deixou a sala");
-                    await chat($"{connections.Count} sairam da sala");
-                    await websocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-                }
-            });
+                connections.Remove(websocket);
+                await chat($"{clientName} deixou a sala");
+                await chat($"{connections.Count} sairam da sala");
+                await websocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            }
+        });
     }
     else
     {
@@ -77,17 +77,16 @@ async Task ReceberMensagem(WebSocket socket, Action<WebSocketReceiveResult, Byte
         handleMessage(result, buffer);
     }
 }
-async Task chat(string message)
+async Task chat(string message, WebSocket? sender = null)
 {
     var bytes = Encoding.UTF8.GetBytes(message);
-    foreach (var sockets in connections)
+    foreach (var socket in connections)
     {
-        if (sockets.State == WebSocketState.Open)
+        if (socket.State == WebSocketState.Open && socket != sender)
         {
-          var arraySegment = new ArraySegment<byte>(bytes, 0, bytes.Length);
-          await sockets.SendAsync(arraySegment,WebSocketMessageType.Text,true,CancellationToken.None);
+            var arraySegment = new ArraySegment<byte>(bytes, 0, bytes.Length);
+            await socket.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
         }
-        
     }
 }
 app.UseCors(MyAllowSpecificOrigins);
